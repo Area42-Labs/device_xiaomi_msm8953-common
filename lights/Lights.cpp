@@ -38,6 +38,7 @@ namespace light {
 #define RED_LED_FILE_BASE                   JOIN_PATH(LED_FILE_BASE, "red")
 #define GREEN_LED_FILE_BASE                 JOIN_PATH(LED_FILE_BASE, "green")
 #define BLUE_LED_FILE_BASE                  JOIN_PATH(LED_FILE_BASE, "blue")
+#define WHITE_LED_FILE_BASE                 JOIN_PATH(LED_FILE_BASE, "white")
 
 #define BUTTON_BACKLIGHT_LED_FILE_BASE      JOIN_PATH(LED_FILE_BASE, "button-backlight")
 #define LCD_BACKLIGHT_LED_FILE_BASE         JOIN_PATH(LED_FILE_BASE, "lcd-backlight")
@@ -45,10 +46,12 @@ namespace light {
 static const std::string kRedLEDFile = JOIN_PATH(RED_LED_FILE_BASE, "brightness");
 static const std::string kGreenLEDFile = JOIN_PATH(GREEN_LED_FILE_BASE, "brightness");
 static const std::string kBlueLEDFile = JOIN_PATH(BLUE_LED_FILE_BASE, "brightness");
+static const std::string kWhiteLEDFile = JOIN_PATH(WHITE_LED_FILE_BASE, "brightness");
 
 static const std::string kRedBlinkFile = JOIN_PATH(RED_LED_FILE_BASE, "blink");
 static const std::string kGreenBlinkFile = JOIN_PATH(GREEN_LED_FILE_BASE, "blink");
 static const std::string kBlueBlinkFile = JOIN_PATH(BLUE_LED_FILE_BASE, "blink");
+static const std::string kWhiteBlinkFile = JOIN_PATH(WHITE_LED_FILE_BASE, "blink");
 
 static const std::string kLCDFile = JOIN_PATH(LCD_BACKLIGHT_LED_FILE_BASE, "brightness");
 static const std::string kLCDFile2 = "/sys/class/backlight/panel0-backlight/brightness";
@@ -70,6 +73,7 @@ const static std::vector<HwLight> kAvailableLights = {
 Lights::Lights() {
     mBacklightNode = (!access(kLCDFile.c_str(), F_OK)) ? kLCDFile : kLCDFile2;
     mButtonExists = !access(kButtonFile.c_str(), F_OK);
+    mWhiteLed = !access(kWhiteLEDFile.c_str(), W_OK);
 }
 
 // AIDL methods
@@ -181,6 +185,8 @@ ndk::ScopedAStatus Lights::setSpeakerLightLocked(const HwLightState& state) {
         blink = 0;
 
     if (blink) {
+        if (mwhite && WriteToFile(kWhiteBlinkFile, blink))
+            WriteToFile(kWhiteLEDFile, 0);
         if (red && WriteToFile(kRedBlinkFile, blink))
             WriteToFile(kRedLEDFile, 0);
         if (green && WriteToFile(kGreenBlinkFile, blink))
